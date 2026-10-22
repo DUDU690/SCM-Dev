@@ -1,0 +1,19 @@
+{
+  "name": "saka-sms",
+  "version": "1.0.0",
+  "description": "SAKA School Management System - Monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "prisma:migrate": "cd backend && npm run prisma:migrate",
+    "prisma:seed": "cd backend && npm run prisma:seed",
+    "prisma:studio": "cd backend && npm run prisma:studio",
+    "setup": "npm run install:all && npm run prisma:migrate && npm run prisma:seed"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
