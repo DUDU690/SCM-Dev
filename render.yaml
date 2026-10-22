@@ -1,0 +1,49 @@
+services:
+  # ── Backend API ──────────────────────────────────────────────────────────────
+  - type: web
+    name: saka-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install && npm run build && npx prisma generate
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        sync: false          # You fill this in on Render dashboard
+      - key: JWT_ACCESS_SECRET
+        generateValue: true  # Render auto-generates a secure random value
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        sync: false   # Set to: https://saka-frontend.onrender.com
+      - key: UPLOAD_DIR
+        value: ./uploads
+      - key: MAX_FILE_SIZE_MB
+        value: 10
+
+  # ── Frontend Static Site ─────────────────────────────────────────────────────
+  - type: web
+    name: saka-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false   # Set to: https://saka-backend.onrender.com/api/v1
