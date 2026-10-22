@@ -36,7 +36,8 @@ import dashboardRoutes from './routes/dashboard.routes';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URLS = (process.env.FRONTEND_URL || 'http://localhost:5173')
+  .split(',').map(u => u.trim()).filter(Boolean);
 
 // ─── Security headers ────────────────────────────────────────────────────────
 app.use(helmet({
@@ -45,7 +46,10 @@ app.use(helmet({
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: (origin, cb) => {
+    if (!origin || FRONTEND_URLS.includes(origin)) return cb(null, true);
+    cb(new Error(`CORS: origin ${origin} not allowed`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

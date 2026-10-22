@@ -23,6 +23,8 @@ const paymentSchema = z.object({
   razorpayKeyId: z.string().optional(),
   razorpayKeySecret: z.string().optional(),
   razorpayMode: z.enum(['test', 'live']).optional(),
+  upiId: z.string().optional(),
+  upiName: z.string().optional(),
 });
 
 async function upsertSettings(data: Record<string, unknown>) {
@@ -63,16 +65,25 @@ router.patch('/', authorize(Role.ADMIN), async (req: Request, res: Response, nex
   } catch (err) { next(err); }
 });
 
-// GET /payment — return payment config (key ID + mode only, never secret)
-router.get('/payment', authorize(Role.ADMIN), async (req: Request, res: Response, next: NextFunction) => {
+// GET /payment — return payment config (key ID + mode + UPI, never secret); admin-only for keys, all auth for UPI
+router.get('/payment', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const settings = await prisma.schoolSettings.findFirst({
-      select: { razorpayKeyId: true, razorpayMode: true },
+      select: { razorpayKeyId: true, razorpayMode: true, upiId: true, upiName: true },
     });
     const keyId = settings?.razorpayKeyId || process.env.RAZORPAY_KEY_ID || '';
     const mode = settings?.razorpayMode || 'test';
     const configured = keyId.startsWith('rzp_') && !keyId.includes('XXXX');
-    res.json({ success: true, data: { razorpayKeyId: keyId, razorpayMode: mode, configured } });
+    const isAdmin = req.user?.role === Role.ADMIN;
+    res.json({
+      success: true,
+      data: {
+        ...(isAdmin ? { razorpayKeyId: keyId, razorpayMode: mode, configured } : {}),
+        upiId: settings?.upiId || '',
+        upiName: settings?.upiName || '',
+        razorpayEnabled: configured,
+      },
+    });
   } catch (err) { next(err); }
 });
 

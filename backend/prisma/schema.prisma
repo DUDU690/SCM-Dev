@@ -125,6 +125,8 @@ model SchoolSettings {
   razorpayKeyId     String?
   razorpayKeySecret String?
   razorpayMode      String?  @default("test")
+  upiId             String?
+  upiName           String?
   updatedAt         DateTime @updatedAt
 }
 

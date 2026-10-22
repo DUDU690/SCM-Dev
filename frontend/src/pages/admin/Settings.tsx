@@ -18,6 +18,8 @@ interface PaymentSettings {
   razorpayKeySecret: string;
   razorpayMode: 'test' | 'live';
   configured: boolean;
+  upiId: string;
+  upiName: string;
 }
 
 export default function SettingsPage() {
@@ -28,7 +30,7 @@ export default function SettingsPage() {
   const [error, setError] = useState('');
 
   // Payment settings
-  const [payment, setPayment] = useState<PaymentSettings>({ razorpayKeyId: '', razorpayKeySecret: '', razorpayMode: 'test', configured: false });
+  const [payment, setPayment] = useState<PaymentSettings>({ razorpayKeyId: '', razorpayKeySecret: '', razorpayMode: 'test', configured: false, upiId: '', upiName: '' });
   const [paymentLoading, setPaymentLoading] = useState(true);
   const [paymentSaving, setPaymentSaving] = useState(false);
   const [paymentSaved, setPaymentSaved] = useState(false);
@@ -67,10 +69,12 @@ export default function SettingsPage() {
       const payload: Record<string, string> = { razorpayMode: payment.razorpayMode };
       if (payment.razorpayKeyId) payload.razorpayKeyId = payment.razorpayKeyId;
       if (payment.razorpayKeySecret) payload.razorpayKeySecret = payment.razorpayKeySecret;
+      payload.upiId = payment.upiId;
+      payload.upiName = payment.upiName;
       await api.patch('/settings/payment', payload);
       // Re-fetch to get updated configured status
       const r = await api.get('/settings/payment');
-      setPayment(p => ({ ...p, ...r.data.data, razorpayKeySecret: '' }));
+      setPayment(p => ({ ...p, ...r.data.data, razorpayKeySecret: '', upiId: r.data.data.upiId || '', upiName: r.data.data.upiName || '' }));
       setPaymentSaved(true);
       setTimeout(() => setPaymentSaved(false), 3000);
     } catch (err: unknown) {
@@ -215,6 +219,31 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
+                  {/* Divider */}
+                  <div className="border-t pt-4">
+                    <p className="text-sm font-medium mb-3">Direct UPI (without Razorpay)</p>
+                    <p className="text-xs text-muted-foreground mb-3">Students will see a scannable QR code when UPI is selected. They pay directly to your UPI ID and enter the transaction reference to confirm.</p>
+                    <div className="space-y-3">
+                      <div>
+                        <Label>UPI ID</Label>
+                        <Input
+                          value={payment.upiId}
+                          onChange={e => setPayment(p => ({ ...p, upiId: e.target.value }))}
+                          placeholder="school@upi or school@sbi"
+                          className="font-mono text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label>Display Name (shown on QR)</Label>
+                        <Input
+                          value={payment.upiName}
+                          onChange={e => setPayment(p => ({ ...p, upiName: e.target.value }))}
+                          placeholder="e.g. SAKA School"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="pt-1">
                     <Button type="submit" loading={paymentSaving}>Save Payment Settings</Button>
                   </div>
@@ -222,7 +251,7 @@ export default function SettingsPage() {
                   <div className="text-xs text-muted-foreground border-t pt-3">
                     <p className="font-medium mb-1">Supported payment methods once configured:</p>
                     <div className="flex flex-wrap gap-2">
-                      {['UPI (GPay · PhonePe · Paytm)', 'Debit / Credit Card', 'Net Banking', 'Wallets'].map(m => (
+                      {['UPI QR Code (direct)', 'UPI via Razorpay', 'Debit / Credit Card', 'Net Banking', 'Wallets'].map(m => (
                         <span key={m} className="px-2 py-0.5 bg-muted rounded-full">{m}</span>
                       ))}
                     </div>
