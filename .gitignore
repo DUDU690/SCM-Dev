@@ -1,50 +1,39 @@
 # Dependencies
 node_modules/
-.pnpm-store/
+*/node_modules/
+**/node_modules/
 
-# Environment
+# Environment files — NEVER commit
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.production
+.env.development
+backend/.env
 
 # Build outputs
 dist/
 build/
-.next/
+frontend/dist/
+backend/dist/
 
-# TypeScript
-*.tsbuildinfo
+# Uploads (user files / photos)
+backend/uploads/
 
 # Logs
-logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
+yarn-error.log*
 
-# Uploads (local dev only)
-backend/uploads/
-
-# Database
-*.db
-*.sqlite
-
-# IDE
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-
-# OS
+# OS files
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Prisma
-# Keep migrations but not generated client
-backend/node_modules/.prisma/
+# Editor
+.vscode/
+.idea/
 
-# Test coverage
-coverage/
+# Prisma generated
+backend/prisma/*.db
+backend/prisma/*.db-journal
