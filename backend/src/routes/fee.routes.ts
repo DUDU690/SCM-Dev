@@ -9,10 +9,13 @@ import { AppError } from '../middlewares/errorHandler';
 import { getPagination, paginate } from '../utils/pagination';
 import { createAuditLog } from '../utils/auditLog';
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || '',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || '',
-});
+async function getRazorpayKeys() {
+  const s = await prisma.schoolSettings.findFirst({ select: { razorpayKeyId: true, razorpayKeySecret: true } });
+  return {
+    key_id: s?.razorpayKeyId || process.env.RAZORPAY_KEY_ID || '',
+    key_secret: s?.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET || '',
+  };
+}
 
 const router = Router();
 router.use(authenticate);
@@ -230,10 +233,9 @@ router.post('/student-payment', authorize(Role.STUDENT), async (req: Request, re
   } catch (err) { next(err); }
 });
 
-function isRazorpayConfigured(): boolean {
-  const id = process.env.RAZORPAY_KEY_ID || '';
-  const secret = process.env.RAZORPAY_KEY_SECRET || '';
-  return id.startsWith('rzp_') && !id.includes('XXXX') && secret.length > 10 && !secret.includes('XXXX');
+async function isRazorpayConfigured(): Promise<boolean> {
+  const { key_id, key_secret } = await getRazorpayKeys();
+  return key_id.startsWith('rzp_') && !key_id.includes('XXXX') && key_secret.length > 10 && !key_secret.includes('XXXX');
 }
 
 // POST /create-payment-order — Student: create Razorpay order (or signal manual fallback)
@@ -252,10 +254,12 @@ router.post('/create-payment-order', authorize(Role.STUDENT), async (req: Reques
     const outstanding = Number(invoice.totalAmount) - Number(invoice.discount ?? 0) - Number(invoice.paidAmount);
     if (amount > outstanding + 0.01) throw new AppError(`Amount exceeds outstanding balance of ${outstanding.toFixed(2)}`, 400);
 
-    if (!isRazorpayConfigured()) {
+    if (!await isRazorpayConfigured()) {
       return res.json({ success: true, data: { razorpayEnabled: false } });
     }
 
+    const keys = await getRazorpayKeys();
+    const razorpay = new Razorpay(keys);
     const order = await razorpay.orders.create({
       amount: Math.round(amount * 100), // paise
       currency: 'INR',
@@ -263,7 +267,7 @@ router.post('/create-payment-order', authorize(Role.STUDENT), async (req: Reques
       notes: { invoiceId, studentId: student.id },
     });
 
-    res.json({ success: true, data: { razorpayEnabled: true, orderId: order.id, amount: order.amount, currency: order.currency, key: process.env.RAZORPAY_KEY_ID } });
+    res.json({ success: true, data: { razorpayEnabled: true, orderId: order.id, amount: order.amount, currency: order.currency, key: keys.key_id } });
   } catch (err) { next(err); }
 });
 
@@ -278,7 +282,7 @@ router.post('/verify-payment', authorize(Role.STUDENT), async (req: Request, res
       amount: z.number().positive(),
     }).parse(req.body);
 
-    const secret = process.env.RAZORPAY_KEY_SECRET || '';
+    const { key_secret: secret } = await getRazorpayKeys();
     const expected = crypto.createHmac('sha256', secret)
       .update(`${body.razorpay_order_id}|${body.razorpay_payment_id}`)
       .digest('hex');

@@ -112,17 +112,20 @@ model RefreshToken {
 // ─── School Settings ──────────────────────────────────────────────────────────
 
 model SchoolSettings {
-  id              String   @id @map("_id")
-  name            String
-  logo            String?
-  address         String?
-  phone           String?
-  email           String?
-  website         String?
-  tagline         String?
-  principalName   String?
-  establishedYear Int?
-  updatedAt       DateTime @updatedAt
+  id                String   @id @map("_id")
+  name              String
+  logo              String?
+  address           String?
+  phone             String?
+  email             String?
+  website           String?
+  tagline           String?
+  principalName     String?
+  establishedYear   Int?
+  razorpayKeyId     String?
+  razorpayKeySecret String?
+  razorpayMode      String?  @default("test")
+  updatedAt         DateTime @updatedAt
 }
 
 // ─── Academic Year & Term ─────────────────────────────────────────────────────
