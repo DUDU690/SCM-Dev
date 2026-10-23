@@ -30,8 +30,8 @@ export default function AttendancePage() {
   useEffect(() => {
     api.get('/classes').then(r => {
       const sections: Section[] = [];
-      for (const c of r.data.data) {
-        for (const s of c.sections) sections.push({ ...s, class: { name: c.name } });
+      for (const c of (r.data.data ?? [])) {
+        for (const s of (c.sections ?? [])) sections.push({ ...s, class: { name: c.name } });
       }
       setSections(sections);
     }).catch(console.error).finally(() => setSectionsLoading(false));
@@ -40,8 +40,8 @@ export default function AttendancePage() {
   useEffect(() => {
     if (!selectedSection) return;
     setLoading(true);
-    api.get(`/attendance/section/${selectedSection}`, { params: { date: selectedDate } })
-      .then(r => setAttendance(r.data.data))
+    api.get(`/attendance/section/${selectedSection}`, { params: { from: selectedDate, to: selectedDate } })
+      .then(r => setAttendance((r.data.data ?? [])[0] ?? null))
       .catch(() => setAttendance(null))
       .finally(() => setLoading(false));
   }, [selectedSection, selectedDate]);
@@ -88,12 +88,12 @@ export default function AttendancePage() {
             {loading ? <LoadingSpinner className="mx-auto" /> : attendance ? (
               <div className="space-y-2">
                 <div className="flex gap-4 text-sm text-muted-foreground mb-4">
-                  <span className="text-green-600">Present: {attendance.records.filter(r => r.status === 'PRESENT').length}</span>
-                  <span className="text-red-600">Absent: {attendance.records.filter(r => r.status === 'ABSENT').length}</span>
-                  <span className="text-yellow-600">Late: {attendance.records.filter(r => r.status === 'LATE').length}</span>
-                  <span className="text-blue-600">Excused: {attendance.records.filter(r => r.status === 'EXCUSED').length}</span>
+                  <span className="text-green-600">Present: {(attendance.records ?? []).filter(r => r.status === 'PRESENT').length}</span>
+                  <span className="text-red-600">Absent: {(attendance.records ?? []).filter(r => r.status === 'ABSENT').length}</span>
+                  <span className="text-yellow-600">Late: {(attendance.records ?? []).filter(r => r.status === 'LATE').length}</span>
+                  <span className="text-blue-600">Excused: {(attendance.records ?? []).filter(r => r.status === 'EXCUSED').length}</span>
                 </div>
-                {attendance.records.map((rec, i) => (
+                {(attendance.records ?? []).map((rec, i) => (
                   <div key={i} className="flex items-center justify-between py-2 border-b last:border-0">
                     <div>
                       <p className="text-sm font-medium">{rec.student?.firstName} {rec.student?.lastName}</p>
