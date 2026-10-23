@@ -67,9 +67,9 @@ async function main() {
     if (!c) c = await prisma.class.create({ data: { name, academicYearId: year.id } });
     return c;
   };
-  const class7 = await getOrCreateClass('Year 7');
-  const class8 = await getOrCreateClass('Year 8');
-  const class9 = await getOrCreateClass('Year 9');
+  const class7 = await getOrCreateClass('Standard 7');
+  const class8 = await getOrCreateClass('Standard 8');
+  const class9 = await getOrCreateClass('Standard 9');
 
   // ── Sections ──────────────────────────────────────────────────────────────────
   const getOrCreateSection = async (classId: string, name: string) => {

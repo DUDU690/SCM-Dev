@@ -109,4 +109,25 @@ router.patch('/:id/sections/:sectionId', authorize(Role.ADMIN), async (req: Requ
   }
 });
 
+// DELETE /:id/sections/:sectionId — Admin: remove section
+router.delete('/:id/sections/:sectionId', authorize(Role.ADMIN), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await prisma.section.delete({ where: { id: req.params.sectionId } });
+    res.json({ success: true, message: 'Section deleted' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /:id — Admin: delete class and all its sections
+router.delete('/:id', authorize(Role.ADMIN), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await prisma.section.deleteMany({ where: { classId: req.params.id } });
+    await prisma.class.delete({ where: { id: req.params.id } });
+    res.json({ success: true, message: 'Class deleted' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

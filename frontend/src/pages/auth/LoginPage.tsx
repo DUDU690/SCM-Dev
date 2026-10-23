@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { ShieldCheck, GraduationCap, BookOpen } from 'lucide-react';
 
 const schema = z.object({
   email: z.string().email('Enter a valid email'),
@@ -18,9 +19,9 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 const DEMO_ACCOUNTS = [
-  { label: 'Admin', email: 'admin@saka.edu', password: 'Admin@12345', color: 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100 dark:bg-red-950 dark:border-red-800 dark:text-red-300' },
-  { label: 'Faculty', email: 'teacher@saka.edu', password: 'Teacher@12345', color: 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-300' },
-  { label: 'Student', email: 'student@saka.edu', password: 'Student@12345', color: 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 dark:bg-green-950 dark:border-green-800 dark:text-green-300' },
+  { label: 'Administrator', sub: 'admin@saka.edu', icon: ShieldCheck, email: 'admin@saka.edu', password: 'Admin@12345', color: 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100 dark:bg-red-950 dark:border-red-800 dark:text-red-300' },
+  { label: 'Teacher', sub: 'teacher@saka.edu', icon: GraduationCap, email: 'teacher@saka.edu', password: 'Teacher@12345', color: 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-300' },
+  { label: 'Student', sub: 'student@saka.edu', icon: BookOpen, email: 'student@saka.edu', password: 'Student@12345', color: 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 dark:bg-green-950 dark:border-green-800 dark:text-green-300' },
 ];
 
 export default function LoginPage() {
@@ -109,22 +110,23 @@ export default function LoginPage() {
                 Quick Login — Demo Accounts
               </p>
               <div className="grid grid-cols-3 gap-2">
-                {DEMO_ACCOUNTS.map((acc) => (
-                  <button
-                    key={acc.label}
-                    type="button"
-                    onClick={() => {
-                      setValue('email', acc.email);
-                      setValue('password', acc.password);
-                    }}
-                    className={`text-xs py-2 px-2 rounded-md border font-semibold transition-colors ${acc.color}`}
-                  >
-                    {acc.label}
-                  </button>
-                ))}
+                {DEMO_ACCOUNTS.map((acc) => {
+                  const Icon = acc.icon;
+                  return (
+                    <button
+                      key={acc.label}
+                      type="button"
+                      onClick={() => { setValue('email', acc.email); setValue('password', acc.password); }}
+                      className={`flex flex-col items-center gap-1 py-3 px-2 rounded-md border font-medium transition-colors ${acc.color}`}
+                    >
+                      <Icon className="h-5 w-5" />
+                      <span className="text-xs font-semibold">{acc.label}</span>
+                    </button>
+                  );
+                })}
               </div>
               <p className="text-[10px] text-center text-muted-foreground mt-2">
-                Click a role to fill in credentials, then Sign in
+                Click a role to auto-fill credentials, then Sign in
               </p>
             </div>
           </CardContent>
