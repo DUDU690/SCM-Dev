@@ -11,7 +11,10 @@ export default function FacultyStudentsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/students', { params: { limit: 200 } }).then(r => setStudents(r.data.data)).catch(console.error).finally(() => setLoading(false));
+    api.get('/students', { params: { limit: 200 } })
+      .then(r => setStudents(r.data.data ?? []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   const columns: Column<Student>[] = [

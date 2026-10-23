@@ -55,7 +55,8 @@ export default function FacultyMarksPage() {
       });
       setSaved(true);
     } catch (err: unknown) {
-      setError((err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Failed to save');
+      const e = err as { response?: { data?: { message?: string; error?: string } } };
+      setError(e.response?.data?.message || e.response?.data?.error || 'Failed to save marks');
     } finally { setSaving(false); }
   }
 

@@ -74,10 +74,12 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     if (req.user!.role === Role.FACULTY) {
       const faculty = await prisma.faculty.findUnique({ where: { userId: req.user!.id } });
       if (!faculty) throw new AppError('Faculty profile not found', 404);
-      // Get sections where this faculty teaches
+      // Get sections where this faculty teaches; if none assigned yet, show all students
       const slots = await prisma.timetableSlot.findMany({ where: { facultyId: faculty.id }, select: { sectionId: true }, distinct: ['sectionId'] });
       const sectionIds = slots.map(s => s.sectionId);
-      where.enrollments = { some: { sectionId: { in: sectionIds }, isActive: true } };
+      if (sectionIds.length > 0) {
+        where.enrollments = { some: { sectionId: { in: sectionIds }, isActive: true } };
+      }
     } else if (req.user!.role === Role.STUDENT) {
       const student = await prisma.student.findUnique({ where: { userId: req.user!.id } });
       if (!student) throw new AppError('Student profile not found', 404);

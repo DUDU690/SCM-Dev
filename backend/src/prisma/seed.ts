@@ -188,7 +188,7 @@ async function main() {
   // ── Examination ────────────────────────────────────────────────────────────────
   let exam = await prisma.examination.findFirst({ where: { classId: class7.id, name: 'Mid-Term Test 1' } });
   if (!exam) exam = await prisma.examination.create({
-    data: { classId: class7.id, academicYearId: year.id, name: 'Mid-Term Test 1', startDate: new Date('2024-11-15'), endDate: new Date('2024-11-20'), isPublished: true },
+    data: { classId: class7.id, academicYearId: year.id, name: 'Mid-Term Test 1', startDate: new Date('2024-11-15'), endDate: new Date('2024-11-20'), isPublished: false },
   });
 
   const addExamSubject = async (examinationId: string, subjectId: string, maxMarks: number, passingMarks: number) => {
