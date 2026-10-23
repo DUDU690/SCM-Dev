@@ -33,16 +33,26 @@ interface DashboardData {
 export default function FacultyDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     api.get('/dashboard/faculty')
       .then(r => setData(r.data.data))
-      .catch(console.error)
+      .catch((err: { response?: { data?: { message?: string } } }) => {
+        setError(err.response?.data?.message || 'Could not load dashboard');
+      })
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="flex justify-center items-center h-64"><LoadingSpinner size="lg" /></div>;
-  if (!data) return <p className="text-center text-muted-foreground mt-20">Could not load dashboard.</p>;
+  if (!data) return (
+    <div className="text-center mt-20 space-y-2">
+      <p className="text-muted-foreground font-medium">{error || 'Could not load dashboard'}</p>
+      {error?.toLowerCase().includes('profile') && (
+        <p className="text-sm text-muted-foreground">Your faculty profile may not be set up yet. Please contact the administrator.</p>
+      )}
+    </div>
+  );
 
   const uniqueClasses = new Set(data.classSubjects.map(cs => cs.class.id)).size;
 

@@ -69,6 +69,7 @@ export default function Sidebar() {
   const navigate = useNavigate();
 
   const role = user?.role ?? 'STUDENT';
+  const ROLE_LABELS: Record<string, string> = { ADMIN: 'Administrator', FACULTY: 'Teacher', STUDENT: 'Student' };
   const profile = user?.faculty ?? user?.student;
   const displayName = profile
     ? `${profile.firstName} ${profile.lastName}`
@@ -90,7 +91,7 @@ export default function Sidebar() {
         </div>
         <div>
           <p className="font-semibold text-sidebar-foreground text-sm">SAKA SMS</p>
-          <p className="text-xs text-sidebar-foreground/60 capitalize">{role.toLowerCase()} portal</p>
+          <p className="text-xs text-sidebar-foreground/60">{ROLE_LABELS[role] ?? role} Portal</p>
         </div>
       </div>
 

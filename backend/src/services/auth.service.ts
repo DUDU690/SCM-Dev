@@ -60,7 +60,8 @@ export async function login(email: string, password: string) {
   const accessToken = generateAccessToken(authUser);
   const refreshToken = await generateRefreshToken(user.id);
 
-  return { accessToken, refreshToken, user: authUser };
+  const fullUser = await getCurrentUser(user.id);
+  return { accessToken, refreshToken, user: fullUser };
 }
 
 export async function refreshAccessToken(token: string) {

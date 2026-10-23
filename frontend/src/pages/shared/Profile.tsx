@@ -85,6 +85,7 @@ export default function SharedProfilePage() {
     ? getInitials(profile.student.firstName, profile.student.lastName)
     : '??';
 
+  const ROLE_LABELS: Record<string, string> = { ADMIN: 'Administrator', FACULTY: 'Teacher', STUDENT: 'Student' };
   const photoUrl = profile?.faculty?.photoUrl || profile?.student?.photoUrl;
   const fullPhotoUrl = photoUrl ? `${API_BASE}${photoUrl}` : null;
   const canUploadPhoto = profile?.role === 'STUDENT' || profile?.role === 'FACULTY';
@@ -123,7 +124,7 @@ export default function SharedProfilePage() {
                 <p className="font-semibold text-lg">{displayName}</p>
                 <p className="text-sm text-muted-foreground">{profile?.email}</p>
                 <div className="flex gap-2 mt-1">
-                  <Badge variant="info">{profile?.role}</Badge>
+                  <Badge variant="info">{ROLE_LABELS[profile?.role ?? ''] ?? profile?.role}</Badge>
                   <Badge variant={profile?.isActive ? 'success' : 'destructive'}>{profile?.isActive ? 'Active' : 'Inactive'}</Badge>
                 </div>
               </div>
