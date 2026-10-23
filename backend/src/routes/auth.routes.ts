@@ -6,7 +6,9 @@ import * as authService from '../services/auth.service';
 
 const router = Router();
 
-const isProd = process.env.NODE_ENV === 'production';
+// Cross-origin cookies need sameSite=none+secure when frontend is on https (production)
+const isProd = process.env.NODE_ENV === 'production' ||
+               (process.env.FRONTEND_URL || '').startsWith('https://');
 const COOKIE_OPTS = {
   httpOnly: true,
   secure: isProd,

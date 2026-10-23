@@ -4,7 +4,7 @@ services:
     name: saka-backend
     runtime: node
     rootDir: backend
-    buildCommand: npm install && npm run build && npx prisma generate && npm run prisma:seed
+    buildCommand: npm install && npm run build && npx prisma generate && (npm run prisma:seed || echo "Seed skipped - DB may not be configured yet")
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
