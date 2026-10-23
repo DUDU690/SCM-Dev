@@ -62,14 +62,18 @@ async function main() {
   }
 
   // ── Classes ───────────────────────────────────────────────────────────────────
-  const getOrCreateClass = async (name: string) => {
+  const getOrCreateClass = async (name: string, oldName?: string) => {
     let c = await prisma.class.findFirst({ where: { name, academicYearId: year.id } });
-    if (!c) c = await prisma.class.create({ data: { name, academicYearId: year.id } });
-    return c;
+    if (c) return c;
+    if (oldName) {
+      const old = await prisma.class.findFirst({ where: { name: oldName, academicYearId: year.id } });
+      if (old) return prisma.class.update({ where: { id: old.id }, data: { name } });
+    }
+    return prisma.class.create({ data: { name, academicYearId: year.id } });
   };
-  const class7 = await getOrCreateClass('Standard 7');
-  const class8 = await getOrCreateClass('Standard 8');
-  const class9 = await getOrCreateClass('Standard 9');
+  const class7 = await getOrCreateClass('Standard 7', 'Year 7');
+  const class8 = await getOrCreateClass('Standard 8', 'Year 8');
+  const class9 = await getOrCreateClass('Standard 9', 'Year 9');
 
   // ── Sections ──────────────────────────────────────────────────────────────────
   const getOrCreateSection = async (classId: string, name: string) => {

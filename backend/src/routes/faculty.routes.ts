@@ -7,6 +7,9 @@ import { AppError } from '../middlewares/errorHandler';
 import { getPagination, paginate } from '../utils/pagination';
 import { hashPassword } from '../services/auth.service';
 import { createAuditLog } from '../utils/auditLog';
+import { uploadAvatar } from '../middlewares/upload.middleware';
+import path from 'path';
+import fs from 'fs';
 
 const router = Router();
 router.use(authenticate);
@@ -177,6 +180,26 @@ router.patch('/:id', async (req: Request, res: Response, next: NextFunction) => 
   } catch (err) {
     next(err);
   }
+});
+
+// POST /me/photo — Faculty: upload own profile picture
+router.post('/me/photo', authorize(Role.FACULTY), (req: Request, res: Response, next: NextFunction) => {
+  uploadAvatar.single('photo')(req, res, async (err) => {
+    try {
+      if (err) throw new AppError(err.message, 400);
+      if (!req.file) throw new AppError('No file uploaded', 400);
+      const faculty = await prisma.faculty.findUnique({ where: { userId: req.user!.id } });
+      if (!faculty) throw new AppError('Faculty not found', 404);
+      const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
+      if (faculty.photoUrl?.startsWith('/uploads/')) {
+        const old = path.join(UPLOAD_DIR, faculty.photoUrl.replace('/uploads/', ''));
+        if (fs.existsSync(old)) fs.unlinkSync(old);
+      }
+      const photoUrl = `/uploads/avatars/${req.file.filename}`;
+      await prisma.faculty.update({ where: { id: faculty.id }, data: { photoUrl } });
+      res.json({ success: true, data: { photoUrl } });
+    } catch (e) { next(e); }
+  });
 });
 
 // DELETE /:id — Admin: soft-delete faculty (deactivates login account)
